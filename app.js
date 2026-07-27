@@ -234,6 +234,20 @@ function updateUI() {
   };
   el("keyLabel").textContent = labels[method] || "金鑰 / 參數";
   paramEl.parentElement.classList.toggle("hidden", !["caesar", "railfence"].includes(method));
+
+  const isSymmetric = ["base64", "caesar", "atbash", "rot13", "vigenere", "railfence", "xor", "aes", "sha256", "utf8hex"].includes(method);
+  const isDecrypt = modeEl.value === "decrypt";
+  if (method === "rsa") {
+    keyEl.placeholder = isDecrypt ? "貼上 RSA 密文" : "輸入明文";
+  } else if (isSymmetric) {
+    keyEl.placeholder = isDecrypt
+      ? "輸入對稱金鑰或密碼"
+      : "輸入對稱金鑰或密碼";
+  }
+
+  generateKeysBtn.disabled = method !== "rsa";
+  exportPublicBtn.disabled = method !== "rsa" || !rsaKeys;
+  exportPrivateBtn.disabled = method !== "rsa" || !rsaKeys;
 }
 
 async function run() {
