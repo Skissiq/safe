@@ -27,57 +27,59 @@
         </div>
       </header>
 
-      <section class="card controls">
-        <div class="grid">
+      <section class="tool-grid">
+        <section class="card controls">
+          <div class="grid">
+            <label>
+              <span>加密方式</span>
+              <select id="method"></select>
+            </label>
+            <label>
+              <span>語言 / 內容</span>
+              <select id="mode">
+                <option value="encrypt">加密 / 編碼</option>
+                <option value="decrypt">解密 / 解碼</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="grid" id="keyRow">
+            <label class="full">
+              <span id="keyLabel">金鑰 / 參數</span>
+              <input id="key" type="text" placeholder="例如：my-secret-key" />
+            </label>
+            <label>
+              <span>輪數 / 參數</span>
+              <input id="param" type="number" min="1" value="3" />
+            </label>
+          </div>
+
+          <div class="grid asym-grid hidden" id="asymActions">
+            <button id="generateKeys" class="secondary">產生 RSA 金鑰</button>
+            <button id="exportPublic" class="secondary" disabled>匯出公鑰</button>
+            <button id="exportPrivate" class="secondary" disabled>匯出私鑰</button>
+          </div>
+
           <label>
-            <span>加密方式</span>
-            <select id="method"></select>
+            <span>輸入文字</span>
+            <textarea id="input" rows="8" placeholder="輸入中文、英文或任何 UTF-8 文字"></textarea>
           </label>
-          <label>
-            <span>語言 / 內容</span>
-            <select id="mode">
-              <option value="encrypt">加密 / 編碼</option>
-              <option value="decrypt">解密 / 解碼</option>
-            </select>
-          </label>
-        </div>
 
-        <div class="grid" id="keyRow">
-          <label class="full">
-            <span id="keyLabel">金鑰 / 參數</span>
-            <input id="key" type="text" placeholder="例如：my-secret-key" />
-          </label>
-          <label>
-            <span>輪數 / 參數</span>
-            <input id="param" type="number" min="1" value="3" />
-          </label>
-        </div>
+          <div class="actions">
+            <button id="run">執行</button>
+            <button id="copy" class="secondary">複製結果</button>
+            <button id="swap" class="ghost">交換輸入 / 輸出</button>
+          </div>
+        </section>
 
-        <div class="grid asym-grid hidden" id="asymActions">
-          <button id="generateKeys" class="secondary">產生 RSA 金鑰</button>
-          <button id="exportPublic" class="secondary" disabled>匯出公鑰</button>
-          <button id="exportPrivate" class="secondary" disabled>匯出私鑰</button>
-        </div>
-
-        <label>
-          <span>輸入文字</span>
-          <textarea id="input" rows="8" placeholder="輸入中文、英文或任何 UTF-8 文字"></textarea>
-        </label>
-
-        <div class="actions">
-          <button id="run">執行</button>
-          <button id="copy" class="secondary">複製結果</button>
-          <button id="swap" class="ghost">交換輸入 / 輸出</button>
-        </div>
-      </section>
-
-      <section class="card output">
-        <div class="output-head">
-          <h2>結果</h2>
-          <span id="status">準備完成</span>
-        </div>
-        <textarea id="output" rows="8" readonly></textarea>
-        <pre id="hint" class="hint"></pre>
+        <section class="card output">
+          <div class="output-head">
+            <h2>結果</h2>
+            <span id="status">準備完成</span>
+          </div>
+          <textarea id="output" rows="18" readonly></textarea>
+          <pre id="hint" class="hint"></pre>
+        </section>
       </section>
 
       <section class="card list-card">

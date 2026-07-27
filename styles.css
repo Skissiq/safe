@@ -23,7 +23,9 @@ h1 { font-size: clamp(2.8rem, 7vw, 5.2rem); line-height: 0.95; margin: 0; }
 .lede { color: var(--muted); font-size: 1.05rem; max-width: 70ch; }
 .badge-panel { display: flex; flex-wrap: wrap; gap: 10px; justify-content: end; }
 .badge-panel span, .method-pill { padding: 10px 14px; border: 1px solid var(--panel-border); border-radius: 999px; background: rgba(255,255,255,0.04); }
-.card { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 24px; padding: 20px; backdrop-filter: blur(18px); box-shadow: 0 18px 55px rgba(0,0,0,0.24); margin-top: 18px; }
+.card { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 24px; padding: 20px; backdrop-filter: blur(18px); box-shadow: 0 18px 55px rgba(0,0,0,0.24); }
+.tool-grid { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr); gap: 18px; margin-top: 18px; align-items: start; }
+.tool-grid .card { margin-top: 0; }
 .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
 .full { grid-column: 1 / -1; }
 label { display: grid; gap: 8px; font-weight: 600; }
@@ -63,4 +65,5 @@ button:disabled { opacity: 0.55; cursor: not-allowed; }
 @media (max-width: 860px) {
   .hero, .grid { grid-template-columns: 1fr; }
   .badge-panel { justify-content: start; }
+  .tool-grid { grid-template-columns: 1fr; }
 }
