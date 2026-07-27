@@ -23,6 +23,9 @@ const hintEl = el("hint");
 const statusEl = el("status");
 const keyRow = el("keyRow");
 const asymActions = el("asymActions");
+const rsaPanel = el("rsaPanel");
+const rsaPublicEl = el("rsaPublic");
+const rsaPrivateEl = el("rsaPrivate");
 const generateKeysBtn = el("generateKeys");
 const exportPublicBtn = el("exportPublic");
 const exportPrivateBtn = el("exportPrivate");
@@ -46,9 +49,10 @@ const b64 = {
 };
 const hex = (bytes) => Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
 const unhex = (s) => {
-  if (s.length % 2) throw new Error("十六進位長度必須是偶數");
-  const out = new Uint8Array(s.length / 2);
-  for (let i = 0; i < s.length; i += 2) out[i / 2] = parseInt(s.slice(i, i + 2), 16);
+  const clean = s.replace(/\s+/g, "");
+  if (clean.length % 2) throw new Error("十六進位長度必須是偶數");
+  const out = new Uint8Array(clean.length / 2);
+  for (let i = 0; i < clean.length; i += 2) out[i / 2] = parseInt(clean.slice(i, i + 2), 16);
   return out;
 };
 
@@ -163,6 +167,22 @@ async function aesDecrypt(text, key) {
   return utf8d.decode(plain);
 }
 
+function pemToDer(pem) {
+  const clean = pem.replace(/-----BEGIN [^-]+-----|-----END [^-]+-----|\s+/g, "");
+  return b64.dec(clean);
+}
+
+async function importRsaKey(pem, type) {
+  const format = type === "public" ? "spki" : "pkcs8";
+  return crypto.subtle.importKey(
+    format,
+    pemToDer(pem),
+    { name: "RSA-OAEP", hash: "SHA-256" },
+    true,
+    type === "public" ? ["encrypt"] : ["decrypt"]
+  );
+}
+
 async function rsaGenerate() {
   rsaKeys = await crypto.subtle.generateKey(
     {
@@ -174,20 +194,24 @@ async function rsaGenerate() {
     true,
     ["encrypt", "decrypt"]
   );
-  exportPublicBtn.disabled = false;
-  exportPrivateBtn.disabled = false;
+  rsaPublicEl.value = await exportKey(rsaKeys.publicKey, "public");
+  rsaPrivateEl.value = await exportKey(rsaKeys.privateKey, "private");
   setStatus("RSA 金鑰已產生");
 }
 
 async function rsaEncrypt(text) {
-  if (!rsaKeys?.publicKey) throw new Error("請先產生 RSA 金鑰");
-  const enc = new Uint8Array(await crypto.subtle.encrypt({ name: "RSA-OAEP" }, rsaKeys.publicKey, utf8.encode(text)));
+  const pem = rsaPublicEl.value.trim();
+  if (!pem) throw new Error("RSA 加密需要公鑰");
+  const publicKey = await importRsaKey(pem, "public");
+  const enc = new Uint8Array(await crypto.subtle.encrypt({ name: "RSA-OAEP" }, publicKey, utf8.encode(text)));
   return b64.enc(enc);
 }
 
 async function rsaDecrypt(text) {
-  if (!rsaKeys?.privateKey) throw new Error("請先產生 RSA 金鑰");
-  const plain = await crypto.subtle.decrypt({ name: "RSA-OAEP" }, rsaKeys.privateKey, b64.dec(text));
+  const pem = rsaPrivateEl.value.trim();
+  if (!pem) throw new Error("RSA 解密需要私鑰");
+  const privateKey = await importRsaKey(pem, "private");
+  const plain = await crypto.subtle.decrypt({ name: "RSA-OAEP" }, privateKey, b64.dec(text));
   return utf8d.decode(plain);
 }
 
@@ -202,7 +226,7 @@ function sha256(text) {
 }
 
 function utf8Hex(text, decrypt = false) {
-  return decrypt ? utf8d.decode(unhex(text.replace(/\s+/g, ""))) : hex(utf8.encode(text));
+  return decrypt ? utf8d.decode(unhex(text)) : hex(utf8.encode(text));
 }
 
 function setStatus(msg) {
@@ -215,9 +239,10 @@ function setHint(msg) {
 
 function updateUI() {
   const method = methodEl.value;
-  const asym = method === "rsa";
-  asymActions.classList.toggle("hidden", !asym);
-  keyRow.classList.toggle("hidden", method === "rsa");
+  const isRsa = method === "rsa";
+  asymActions.classList.toggle("hidden", !isRsa);
+  rsaPanel.classList.toggle("hidden", !isRsa);
+  keyRow.classList.toggle("hidden", isRsa);
   keyEl.placeholder = method === "vigenere" ? "例如：LEMON" : "例如：my-secret-key";
   const labels = {
     base64: "轉碼",
@@ -235,19 +260,17 @@ function updateUI() {
   el("keyLabel").textContent = labels[method] || "金鑰 / 參數";
   paramEl.parentElement.classList.toggle("hidden", !["caesar", "railfence"].includes(method));
 
-  const isSymmetric = ["base64", "caesar", "atbash", "rot13", "vigenere", "railfence", "xor", "aes", "sha256", "utf8hex"].includes(method);
-  const isDecrypt = modeEl.value === "decrypt";
+  const symmetricMethods = ["base64", "caesar", "atbash", "rot13", "vigenere", "railfence", "xor", "aes", "sha256", "utf8hex"];
   if (method === "rsa") {
-    keyEl.placeholder = isDecrypt ? "貼上 RSA 密文" : "輸入明文";
-  } else if (isSymmetric) {
-    keyEl.placeholder = isDecrypt
-      ? "輸入對稱金鑰或密碼"
-      : "輸入對稱金鑰或密碼";
+    rsaPublicEl.placeholder = modeEl.value === "encrypt" ? "貼上 RSA 公鑰 PEM" : "貼上 RSA 公鑰 PEM";
+    rsaPrivateEl.placeholder = modeEl.value === "decrypt" ? "貼上 RSA 私鑰 PEM" : "貼上 RSA 私鑰 PEM";
+  } else if (symmetricMethods.includes(method)) {
+    rsaPublicEl.value = "";
+    rsaPrivateEl.value = "";
   }
-
-  generateKeysBtn.disabled = method !== "rsa";
-  exportPublicBtn.disabled = method !== "rsa" || !rsaKeys;
-  exportPrivateBtn.disabled = method !== "rsa" || !rsaKeys;
+  generateKeysBtn.disabled = !isRsa;
+  exportPublicBtn.disabled = !isRsa;
+  exportPrivateBtn.disabled = !isRsa;
 }
 
 async function run() {
@@ -265,17 +288,15 @@ async function run() {
     else if (method === "rot13") result = caesar(input, 13, false);
     else if (method === "vigenere") result = vigenere(input, key, mode === "decrypt");
     else if (method === "railfence") result = railFence(input, parseInt(param || "2", 10), mode === "decrypt");
-    else if (method === "xor") {
-      if (mode === "encrypt") result = xorCipher(input, key, false);
-      else result = xorCipher(input, key, true);
-    } else if (method === "aes") result = mode === "encrypt" ? await aesEncrypt(input, key) : await aesDecrypt(input.trim(), key);
+    else if (method === "xor") result = mode === "encrypt" ? xorCipher(input, key, false) : xorCipher(input, key, true);
+    else if (method === "aes") result = mode === "encrypt" ? await aesEncrypt(input, key) : await aesDecrypt(input.trim(), key);
     else if (method === "rsa") result = mode === "encrypt" ? await rsaEncrypt(input) : await rsaDecrypt(input.trim());
     else if (method === "sha256") result = await sha256(input);
     else if (method === "utf8hex") result = utf8Hex(input, mode === "decrypt");
 
     outputEl.value = result;
     setStatus("完成");
-    setHint(method === "rsa" ? "這是公鑰 / 私鑰非對稱加密，先產生金鑰再使用。" : "支援中文、英文與 UTF-8 內容。");
+    setHint(method === "rsa" ? "RSA 需要公鑰加密、私鑰解密。你也可以先按產生金鑰自動填入。" : "支援中文、英文與 UTF-8 內容。");
   } catch (err) {
     outputEl.value = "";
     setStatus("發生錯誤");
@@ -284,6 +305,7 @@ async function run() {
 }
 
 methodEl.addEventListener("change", updateUI);
+modeEl.addEventListener("change", updateUI);
 el("run").addEventListener("click", run);
 el("copy").addEventListener("click", async () => {
   await navigator.clipboard.writeText(outputEl.value);
@@ -297,12 +319,12 @@ generateKeysBtn.addEventListener("click", async () => {
 });
 exportPublicBtn.addEventListener("click", async () => {
   if (!rsaKeys) return;
-  outputEl.value = await exportKey(rsaKeys.publicKey, "public");
+  rsaPublicEl.value = await exportKey(rsaKeys.publicKey, "public");
   setStatus("已匯出公鑰");
 });
 exportPrivateBtn.addEventListener("click", async () => {
   if (!rsaKeys) return;
-  outputEl.value = await exportKey(rsaKeys.privateKey, "private");
+  rsaPrivateEl.value = await exportKey(rsaKeys.privateKey, "private");
   setStatus("已匯出私鑰");
 });
 

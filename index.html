@@ -4,8 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Crypto Atlas | 加密工具箱</title>
-    <link rel="stylesheet" href="./styles.css" />
-    <script defer src="./app.js"></script>
+    <link rel="stylesheet" href="./styles.css?v=2" />
+    <script defer src="./app.js?v=2"></script>
   </head>
   <body>
     <div class="bg-orb orb-1"></div>
@@ -58,6 +58,17 @@
             <button id="generateKeys" class="secondary">產生 RSA 金鑰</button>
             <button id="exportPublic" class="secondary" disabled>匯出公鑰</button>
             <button id="exportPrivate" class="secondary" disabled>匯出私鑰</button>
+          </div>
+
+          <div class="grid hidden" id="rsaPanel">
+            <label class="full">
+              <span>RSA 公鑰</span>
+              <textarea id="rsaPublic" rows="6" placeholder="貼上 RSA 公鑰 PEM"></textarea>
+            </label>
+            <label class="full">
+              <span>RSA 私鑰</span>
+              <textarea id="rsaPrivate" rows="6" placeholder="貼上 RSA 私鑰 PEM"></textarea>
+            </label>
           </div>
 
           <label>
