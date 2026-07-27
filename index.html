@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="zh-Hant">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Crypto Atlas | 加密工具箱</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <script defer src="./app.js"></script>
+  </head>
+  <body>
+    <div class="bg-orb orb-1"></div>
+    <div class="bg-orb orb-2"></div>
+    <main class="shell">
+      <header class="hero">
+        <div>
+          <p class="eyebrow">GitHub Pages Ready</p>
+          <h1>Crypto Atlas</h1>
+          <p class="lede">
+            支援 10+ 種加密與編碼方式，包含中文、英文與 UTF-8 文字處理，並提供非對稱加密（RSA 公鑰 / 私鑰）。
+          </p>
+        </div>
+        <div class="badge-panel">
+          <span>對稱</span>
+          <span>非對稱</span>
+          <span>古典密碼</span>
+          <span>編碼工具</span>
+        </div>
+      </header>
+
+      <section class="card controls">
+        <div class="grid">
+          <label>
+            <span>加密方式</span>
+            <select id="method"></select>
+          </label>
+          <label>
+            <span>語言 / 內容</span>
+            <select id="mode">
+              <option value="encrypt">加密 / 編碼</option>
+              <option value="decrypt">解密 / 解碼</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="grid" id="keyRow">
+          <label class="full">
+            <span id="keyLabel">金鑰 / 參數</span>
+            <input id="key" type="text" placeholder="例如：my-secret-key" />
+          </label>
+          <label>
+            <span>輪數 / 參數</span>
+            <input id="param" type="number" min="1" value="3" />
+          </label>
+        </div>
+
+        <div class="grid asym-grid hidden" id="asymActions">
+          <button id="generateKeys" class="secondary">產生 RSA 金鑰</button>
+          <button id="exportPublic" class="secondary" disabled>匯出公鑰</button>
+          <button id="exportPrivate" class="secondary" disabled>匯出私鑰</button>
+        </div>
+
+        <label>
+          <span>輸入文字</span>
+          <textarea id="input" rows="8" placeholder="輸入中文、英文或任何 UTF-8 文字"></textarea>
+        </label>
+
+        <div class="actions">
+          <button id="run">執行</button>
+          <button id="copy" class="secondary">複製結果</button>
+          <button id="swap" class="ghost">交換輸入 / 輸出</button>
+        </div>
+      </section>
+
+      <section class="card output">
+        <div class="output-head">
+          <h2>結果</h2>
+          <span id="status">準備完成</span>
+        </div>
+        <textarea id="output" rows="8" readonly></textarea>
+        <pre id="hint" class="hint"></pre>
+      </section>
+
+      <section class="card list-card">
+        <h2>支援方式</h2>
+        <div id="methodList" class="method-list"></div>
+      </section>
+    </main>
+  </body>
+</html>
